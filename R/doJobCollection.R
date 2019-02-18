@@ -141,30 +141,59 @@ doJobCollection.JobCollection = function(jc, output = NULL) {
 
   runHook(jc, "pre.do.collection", reader = reader)
 
-  for (i in seq_len(n.jobs)) {
-    job = getJob(jc, i, reader = reader)
-    id = job$id
-
-    update = list(started = ustamp(), done = NA_integer_, error = NA_character_, mem.used = NA_real_)
-    catf("### [bt%s]: Starting job [batchtools job.id=%i]", now(), id)
-    if (measure.memory) {
-      gc(reset = TRUE)
-      result = try(execJob(job))
-      update$mem.used = sum(gc()[, 1L] * memory.mult) / 1000000L
-    } else {
-      result = try(execJob(job))
+  if (isTRUE(resources$recursive.parallel)) {
+    results = parallel::mclapply(seq_len(n.jobs), function(i) {
+      job = getJob(jc, i, reader = reader)
+      id = job$id
+      update = list(started = ustamp(), done = NA_integer_, error = NA_character_, mem.used = NA_real_)
+      catf("### [bt%s]: Starting job [batchtools job.id=%i]", now(), id)
+      if (measure.memory) {
+        gc(reset = TRUE)
+        result = try(execJob(job))
+         update$mem.used = sum(gc()[, 1L] * memory.mult) / 1000000L
+      } else {
+        result = try(execJob(job))
+      }
+      update$done = ustamp()
+      list(i = i, id = id, job = job, update = update, result = result)
+    }, mc.cores = jc$resources$ncpus %??% 1, mc.preschedule = FALSE)
+    lapply(results, function(l) {
+      if (is.error(l$result)) {
+        catf("\n### [bt%s]: Job terminated with an exception [batchtools job.id=%i]", now(), id)
+        update$error = stri_trunc(stri_trim_both(as.character(result)), 500L, " [truncated]")
+      } else {
+        catf("\n### [bt%s]: Job terminated successfully [batchtools job.id=%i]", now(), id)
+        writeRDS(result, file = getResultFiles(jc, id))
+      }
+      buf$add(i, update)
+      buf$flush(jc)
+    })
+  } else {
+    for (i in seq_len(n.jobs)) {
+      job = getJob(jc, i, reader = reader)
+      id = job$id
+  
+      update = list(started = ustamp(), done = NA_integer_, error = NA_character_, mem.used = NA_real_)
+      catf("### [bt%s]: Starting job [batchtools job.id=%i]", now(), id)
+      if (measure.memory) {
+        gc(reset = TRUE)
+        result = try(execJob(job))
+         update$mem.used = sum(gc()[, 1L] * memory.mult) / 1000000L
+      } else {
+        result = try(execJob(job))
+      }
+      update$done = ustamp()
+  
+      if (is.error(result)) {
+        catf("\n### [bt%s]: Job terminated with an exception [batchtools job.id=%i]", now(), id)
+        update$error = stri_trunc(stri_trim_both(as.character(result)), 500L, " [truncated]")
+      } else {
+        catf("\n### [bt%s]: Job terminated successfully [batchtools job.id=%i]", now(), id)
+        writeRDS(result, file = getResultFiles(jc, id))
+      }
+      buf$add(i, update)
+      buf$flush(jc)
     }
-    update$done = ustamp()
-
-    if (is.error(result)) {
-      catf("\n### [bt%s]: Job terminated with an exception [batchtools job.id=%i]", now(), id)
-      update$error = stri_trunc(stri_trim_both(as.character(result)), 500L, " [truncated]")
-    } else {
-      catf("\n### [bt%s]: Job terminated successfully [batchtools job.id=%i]", now(), id)
-      writeRDS(result, file = getResultFiles(jc, id))
-    }
-    buf$add(i, update)
-    buf$flush(jc)
   }
 
   runHook(jc, "post.do.collection", updates = buf$updates, reader = reader)
