@@ -1,5 +1,3 @@
-context("addExperiments")
-
 test_that("addExperiments handles parameters correctly", {
   reg = makeTestExperimentRegistry()
   prob = addProblem(reg = reg, "p1", data = iris, fun = function(job, data, x, y, ...) stopifnot(is.numeric(x) && is.character(y)), seed = 42)
@@ -38,7 +36,6 @@ test_that("addExperiments / user provided designs", {
   addAlgorithm(reg = reg, "a2", fun = function(...) ncol(data))
   prob.designs = list(p1 = data.table(a = 1, b = 2:4))
   algo.designs = list(a1 = data.table(c = 3:8), a2 = data.table())
-  repls = 1
   ids = addExperiments(reg = reg, prob.designs = prob.designs, algo.designs = algo.designs, combine = "bind")
   expect_data_table(ids, nrow = 9, key = "job.id")
   tab = getJobPars(reg = reg)
@@ -60,16 +57,18 @@ test_that("addExperiments / user provided designs", {
   expect_data_table(ids, nrow = 12, key = "job.id")
   expect_data_table(unwrap(getJobPars(reg = reg)), nrow = 28)
 
-  pd = list(p1 = data.frame(foo = letters[1:2]))
-  withr::with_options(list(stringsAsFactors = NULL), {
-    expect_warning(addExperiments(reg = reg, prob.designs = pd), "stringsAsFactors")
-  })
-  withr::with_options(list(stringsAsFactors = TRUE), {
-    expect_warning(addExperiments(reg = reg, prob.designs = pd), "stringsAsFactors")
-  })
-  withr::with_options(list(stringsAsFactors = FALSE), {
-    addExperiments(reg = reg, prob.designs = pd)
-  })
+  if (getRversion() < "4.0.0") {
+    pd = list(p1 = data.frame(foo = letters[1:2]))
+    withr::with_options(list(stringsAsFactors = NULL), {
+      expect_warning(addExperiments(reg = reg, prob.designs = pd), "stringsAsFactors")
+    })
+    withr::with_options(list(stringsAsFactors = TRUE), {
+      expect_warning(addExperiments(reg = reg, prob.designs = pd), "stringsAsFactors")
+    })
+    withr::with_options(list(stringsAsFactors = FALSE), {
+      addExperiments(reg = reg, prob.designs = pd)
+    })
+  }
 })
 
 # reg = makeTestExperimentRegistry()

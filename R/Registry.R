@@ -29,6 +29,7 @@
 #'   \item{\code{temp.dir}:}{Path to directory to use for temporary registries.}
 #'   \item{\code{sleep}:}{Custom sleep function. See \code{\link{waitForJobs}}.}
 #'   \item{\code{expire.after}:}{Number of iterations before treating jobs as expired in \code{\link{waitForJobs}}.}
+#'   \item{\code{compress}:}{Compression algorithm to use via \code{\link{saveRDS}}.}
 #' }
 #'
 #' @param file.dir [\code{character(1)}]\cr
@@ -83,7 +84,9 @@
 #'   Calls \code{\link[base]{load}} using the \code{\link[base]{.GlobalEnv}}.
 #' @param seed [\code{integer(1)}]\cr
 #'   Start seed for jobs. Each job uses the (\code{seed} + \code{job.id}) as seed.
-#'   Default is a random number in the range [1, \code{.Machine$integer.max/2}].
+#'   Default is a random integer between 1 and 32768.
+#'   Note that there is an additional seeding mechanism to synchronize instantiation of
+#'   \code{\link{Problem}}s in a \code{\link{ExperimentRegistry}}.
 #' @param make.default [\code{logical(1)}]\cr
 #'   If set to \code{TRUE}, the created registry is saved inside the package
 #'   namespace and acts as default registry. You might want to switch this
@@ -134,7 +137,7 @@ makeRegistry = function(file.dir = "registry", work.dir = getwd(), conf.file = f
   assertCharacter(source, any.missing = FALSE, min.chars = 1L)
   assertCharacter(load, any.missing = FALSE, min.chars = 1L)
   assertFlag(make.default)
-  seed = if (is.null(seed)) as.integer(runif(1L, 0, 32768)) else asCount(seed, positive = TRUE)
+  seed = if (is.null(seed)) as.integer(runif(1L, 1, 32768)) else asCount(seed, positive = TRUE)
 
   reg = new.env(parent = asNamespace("batchtools"))
   reg$file.dir = file.dir
@@ -265,8 +268,13 @@ assertRegistry = function(reg, class = NULL, writeable = FALSE, sync = FALSE, ru
   if (!running.ok && nrow(.findOnSystem(reg = reg)) > 0L)
     stop("This operation is not allowed while jobs are running on the system")
 
-  if (sync && sync(reg))
-    saveRegistry(reg)
+  if (sync) {
+    merged = sync(reg)
+    if (length(merged)) {
+      saveRegistry(reg)
+      file_remove(merged)
+    }
+  }
 
   invisible(TRUE)
 }
@@ -304,7 +312,7 @@ loadRegistryDependencies = function(x, must.work = FALSE) {
   if (length(fns) > 0L) {
     ee = .GlobalEnv
     Map(function(name, fn) {
-      assign(x = name, value = readRDS(fn), envir = ee)
+      delayedAssign(x = name, value = readRDS(fn), assign.env = ee)
     }, name = unmangle(fns), fn = fs::path(path, fns))
   }
 

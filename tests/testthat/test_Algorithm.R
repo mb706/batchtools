@@ -1,12 +1,10 @@
-context("addAlgorithm")
-
 test_that("addAlgorithm", {
   reg = makeTestExperimentRegistry()
   algo = addAlgorithm(reg = reg, "a1", fun = function(job, data, instance, ...) NULL)
   expect_is(algo, "Algorithm")
   expect_equal(algo$name, "a1")
   expect_function(algo$fun)
-  expect_file(getAlgorithmURI(reg, algo$name))
+  expect_file_exists(getAlgorithmURI(reg, algo$name))
 
   prob = addProblem(reg = reg, "p1", data = iris, fun = function(job, data) nrow(data))
   algo = addAlgorithm(reg = reg, "a2", fun = function(...) NULL)

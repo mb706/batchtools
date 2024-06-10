@@ -1,12 +1,11 @@
-context("batchMap")
-
 test_that("batchMap", {
   reg = makeTestRegistry()
   fun = function(...) list(...)
   ids = batchMap(fun, i = 1:3, more.args = list(x = 1), reg = reg)
   expect_data_table(ids, any.missing = FALSE, ncols = 1L, nrow = 3L, key = "job.id")
   expect_equal(ids$job.id, 1:3)
-  expect_equal(readRDS(fs::path(reg$file.dir, "user.function.rds")), fun)
+  if (getRversion() < "4.1.0")
+    expect_equal(readRDS(fs::path(reg$file.dir, "user.function.rds")), fun)
   expect_equal(readRDS(fs::path(reg$file.dir, "more.args.rds")), list(x = 1))
 
   checkTables(reg)
@@ -38,4 +37,13 @@ test_that("batchMap", {
   ids = batchMap(fun, args = cj, reg = reg)
   expect_data_table(ids, nrow = 9, key = "job.id")
   expect_equivalent(unwrap(getJobPars(reg = reg))[, c("a", "b")], cj)
+})
+
+test_that("batchMap with unnamed more.args (#267)", {
+  reg = makeTestRegistry()
+  fun = function(...) list(...)
+  ids = batchMap(fun, 1:3, more.args = list(j = 1L, 5L), reg = reg)
+  expect_equal(readRDS(fs::path(reg$file.dir, "more.args.rds")), list(j = 1L, 5L))
+  submitAndWait(reg)
+  expect_equal(loadResult(1, reg), list(1L, j = 1L, 5L))
 })

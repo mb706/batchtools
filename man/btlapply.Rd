@@ -5,12 +5,27 @@
 \alias{btmapply}
 \title{Synchronous Apply Functions}
 \usage{
-btlapply(X, fun, ..., resources = list(), n.chunks = NULL,
-  chunk.size = NULL, reg = makeRegistry(file.dir = NA))
+btlapply(
+  X,
+  fun,
+  ...,
+  resources = list(),
+  n.chunks = NULL,
+  chunk.size = NULL,
+  reg = makeRegistry(file.dir = NA)
+)
 
-btmapply(fun, ..., more.args = list(), simplify = FALSE,
-  use.names = TRUE, resources = list(), n.chunks = NULL,
-  chunk.size = NULL, reg = makeRegistry(file.dir = NA))
+btmapply(
+  fun,
+  ...,
+  more.args = list(),
+  simplify = FALSE,
+  use.names = TRUE,
+  resources = list(),
+  n.chunks = NULL,
+  chunk.size = NULL,
+  reg = makeRegistry(file.dir = NA)
+)
 }
 \arguments{
 \item{X}{[\code{\link[base]{vector}}]\cr
@@ -60,7 +75,7 @@ If no registry is provided, a temporary registry (see argument \code{file.dir} o
 will be used.
 After all jobs are terminated (see \code{\link{waitForJobs}}), the results are collected and returned as a list.
 
-Note that these functions are one suitable for short and fail-safe operations
+Note that these functions are only suitable for short and fail-safe operations
 on batch system. If some jobs fail, you have to retrieve partial results from the
 registry directory yourself.
 }

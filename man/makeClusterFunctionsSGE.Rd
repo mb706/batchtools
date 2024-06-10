@@ -4,8 +4,12 @@
 \alias{makeClusterFunctionsSGE}
 \title{ClusterFunctions for SGE Systems}
 \usage{
-makeClusterFunctionsSGE(template = "sge", nodename = "localhost",
-  scheduler.latency = 1, fs.latency = 65)
+makeClusterFunctionsSGE(
+  template = "sge",
+  nodename = "localhost",
+  scheduler.latency = 1,
+  fs.latency = 65
+)
 }
 \arguments{
 \item{template}{[\code{character(1)}]\cr
@@ -41,7 +45,7 @@ Usually safe to set to \code{0} to disable the heuristic, e.g. if you are workin
 }
 \description{
 Cluster functions for Univa Grid Engine / Oracle Grid Engine /
-Sun Grid Engine (\url{http://www.univa.com/}).
+Sun Grid Engine (\url{https://www.univa.com/}).
 
 Job files are created based on the brew template \code{template}. This
 file is processed with brew and then submitted to the queue using the
@@ -59,15 +63,16 @@ allocations.
 Array jobs are currently not supported.
 }
 \seealso{
-Other ClusterFunctions: \code{\link{makeClusterFunctionsDocker}},
-  \code{\link{makeClusterFunctionsInteractive}},
-  \code{\link{makeClusterFunctionsLSF}},
-  \code{\link{makeClusterFunctionsMulticore}},
-  \code{\link{makeClusterFunctionsOpenLava}},
-  \code{\link{makeClusterFunctionsSSH}},
-  \code{\link{makeClusterFunctionsSlurm}},
-  \code{\link{makeClusterFunctionsSocket}},
-  \code{\link{makeClusterFunctionsTORQUE}},
-  \code{\link{makeClusterFunctions}}
+Other ClusterFunctions: 
+\code{\link{makeClusterFunctionsDocker}()},
+\code{\link{makeClusterFunctionsInteractive}()},
+\code{\link{makeClusterFunctionsLSF}()},
+\code{\link{makeClusterFunctionsMulticore}()},
+\code{\link{makeClusterFunctionsOpenLava}()},
+\code{\link{makeClusterFunctionsSSH}()},
+\code{\link{makeClusterFunctionsSlurm}()},
+\code{\link{makeClusterFunctionsSocket}()},
+\code{\link{makeClusterFunctionsTORQUE}()},
+\code{\link{makeClusterFunctions}()}
 }
 \concept{ClusterFunctions}

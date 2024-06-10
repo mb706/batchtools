@@ -1,3 +1,38 @@
+# batchtools 0.9.17
+
+* Fixed a bug in the finalizer of `ClusterFunctionsMulticore`.
+
+# batchtools 0.9.16
+
+* Fixed a bug in `addExperiments()` in combination with combination method `"bind"` and repls > 1 where experiments have been duplicated.
+* `addExperiments()` now also accepts a vector of replications (instead of a single scalar value) for argument `repls`.
+* Improved handling of jobs in `ClusterFunctionsSlurm`.
+* Fixed a bug in `waitForJobs()`
+* Fixed some assertions.
+
+
+# batchtools 0.9.15
+
+* Maintenance update.
+
+# batchtools 0.9.14
+
+* `batchMap()` now supports unnamed `more.args`.
+* Exports are now assigned with `delayedAssign()`.
+* Fix an option in the LSF template.
+
+# batchtools 0.9.13
+
+* Maintenance release for R-4.0.0.
+
+# batchtools 0.9.12
+
+* Moved `data.table` from `Depends` to `Imports`.
+  User scripts might need to explicitly attach `data.table` via `library()` now.
+* Fixes for `ClusterFunctionsMulticore`.
+* Removed a workaround for `system2()` for R-devel (to be released as R-4.0.0).
+* New configuration option `compress` to select the compression algorithm (passed down to `saveRDS()`).
+
 # batchtools 0.9.11
 
 * Removed deprecated function `chunkIds()`.

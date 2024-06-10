@@ -1,5 +1,3 @@
-context("reduceResults")
-
 suppressMessages({
   reg = makeTestRegistry()
   fun = function(...) list(...)
@@ -144,12 +142,12 @@ test_that("reduceResultsList/NULL", {
 test_that("reduceResultsDataTable/multiRowResults", {
   silent({
     reg = makeTestRegistry()
-    fun = function(a) data.table(y1 = rep(a, 3), y2 = rep(a/2, 3))
+    fun = function(a) data.frame(y1 = rep(a, 3), y2 = rep(a/2, 3))
     ids = batchMap(fun, a = c(10, 100), reg = reg)
     submitAndWait(reg, ids)
     res = reduceResultsDataTable(reg = reg)
-    expect_data_table(res, ncol = 2, nrow = 2)
-    expect_list(res$result, types = "data.table", len = 2L)
+    expect_data_frame(res, ncol = 2, nrow = 2)
+    expect_list(res$result, types = "data.frame", len = 2L)
   })
 })
 
@@ -165,4 +163,3 @@ test_that("reduceResultsDataTable/unwrap objects", {
     expect_list(tab$result, types = "data.frame", names = "unnamed")
   })
 })
-

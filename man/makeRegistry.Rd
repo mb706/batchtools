@@ -5,10 +5,17 @@
 \alias{Registry}
 \title{Registry Constructor}
 \usage{
-makeRegistry(file.dir = "registry", work.dir = getwd(),
-  conf.file = findConfFile(), packages = character(0L),
-  namespaces = character(0L), source = character(0L),
-  load = character(0L), seed = NULL, make.default = TRUE)
+makeRegistry(
+  file.dir = "registry",
+  work.dir = getwd(),
+  conf.file = findConfFile(),
+  packages = character(0L),
+  namespaces = character(0L),
+  source = character(0L),
+  load = character(0L),
+  seed = NULL,
+  make.default = TRUE
+)
 }
 \arguments{
 \item{file.dir}{[\code{character(1)}]\cr
@@ -70,7 +77,9 @@ Calls \code{\link[base]{load}} using the \code{\link[base]{.GlobalEnv}}.}
 
 \item{seed}{[\code{integer(1)}]\cr
 Start seed for jobs. Each job uses the (\code{seed} + \code{job.id}) as seed.
-Default is a random number in the range [1, \code{.Machine$integer.max/2}].}
+Default is a random integer between 1 and 32768.
+Note that there is an additional seeding mechanism to synchronize instantiation of
+\code{\link{Problem}}s in a \code{\link{ExperimentRegistry}}.}
 
 \item{make.default}{[\code{logical(1)}]\cr
 If set to \code{TRUE}, the created registry is saved inside the package
@@ -127,6 +136,7 @@ Currently \pkg{batchtools} understands the following options set via the configu
   \item{\code{temp.dir}:}{Path to directory to use for temporary registries.}
   \item{\code{sleep}:}{Custom sleep function. See \code{\link{waitForJobs}}.}
   \item{\code{expire.after}:}{Number of iterations before treating jobs as expired in \code{\link{waitForJobs}}.}
+  \item{\code{compress}:}{Compression algorithm to use via \code{\link{saveRDS}}.}
 }
 }
 \examples{
@@ -142,10 +152,13 @@ tmp$packages = c("MASS")
 saveRegistry(reg = tmp)
 }
 \seealso{
-Other Registry: \code{\link{clearRegistry}},
-  \code{\link{getDefaultRegistry}},
-  \code{\link{loadRegistry}}, \code{\link{removeRegistry}},
-  \code{\link{saveRegistry}}, \code{\link{sweepRegistry}},
-  \code{\link{syncRegistry}}
+Other Registry: 
+\code{\link{clearRegistry}()},
+\code{\link{getDefaultRegistry}()},
+\code{\link{loadRegistry}()},
+\code{\link{removeRegistry}()},
+\code{\link{saveRegistry}()},
+\code{\link{sweepRegistry}()},
+\code{\link{syncRegistry}()}
 }
 \concept{Registry}

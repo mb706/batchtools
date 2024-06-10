@@ -4,8 +4,11 @@
 \alias{makeClusterFunctionsLSF}
 \title{ClusterFunctions for LSF Systems}
 \usage{
-makeClusterFunctionsLSF(template = "lsf", scheduler.latency = 1,
-  fs.latency = 65)
+makeClusterFunctionsLSF(
+  template = "lsf",
+  scheduler.latency = 1,
+  fs.latency = 65
+)
 }
 \arguments{
 \item{template}{[\code{character(1)}]\cr
@@ -32,7 +35,7 @@ Usually safe to set to \code{0} to disable the heuristic, e.g. if you are workin
 [\code{\link{ClusterFunctions}}].
 }
 \description{
-Cluster functions for LSF (\url{https://www.ibm.com/us-en/marketplace/hpc-workload-management}).
+Cluster functions for LSF (\url{https://www.ibm.com/products/hpc-workload-management}).
 
 Job files are created based on the brew template \code{template.file}. This
 file is processed with brew and then submitted to the queue using the
@@ -50,15 +53,16 @@ allocations.
 Array jobs are currently not supported.
 }
 \seealso{
-Other ClusterFunctions: \code{\link{makeClusterFunctionsDocker}},
-  \code{\link{makeClusterFunctionsInteractive}},
-  \code{\link{makeClusterFunctionsMulticore}},
-  \code{\link{makeClusterFunctionsOpenLava}},
-  \code{\link{makeClusterFunctionsSGE}},
-  \code{\link{makeClusterFunctionsSSH}},
-  \code{\link{makeClusterFunctionsSlurm}},
-  \code{\link{makeClusterFunctionsSocket}},
-  \code{\link{makeClusterFunctionsTORQUE}},
-  \code{\link{makeClusterFunctions}}
+Other ClusterFunctions: 
+\code{\link{makeClusterFunctionsDocker}()},
+\code{\link{makeClusterFunctionsInteractive}()},
+\code{\link{makeClusterFunctionsMulticore}()},
+\code{\link{makeClusterFunctionsOpenLava}()},
+\code{\link{makeClusterFunctionsSGE}()},
+\code{\link{makeClusterFunctionsSSH}()},
+\code{\link{makeClusterFunctionsSlurm}()},
+\code{\link{makeClusterFunctionsSocket}()},
+\code{\link{makeClusterFunctionsTORQUE}()},
+\code{\link{makeClusterFunctions}()}
 }
 \concept{ClusterFunctions}

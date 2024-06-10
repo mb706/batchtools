@@ -9,9 +9,10 @@
 #' \code{(p1, a3)}, \code{(p2, a1)}, \code{(p2, a2)} and \code{(p2, a3)}.
 #'
 #' @note
-#' R's \code{data.frame} converts character vectors to factors by default which frequently resulted in problems using \code{addExperiments}.
+#' R's \code{data.frame} converts character vectors to factors by default in R versions prior to 4.0.0 which frequently resulted in problems using \code{addExperiments}.
 #' Therefore, this function will warn about factor variables if the following conditions hold:
 #' \enumerate{
+#'   \item R version is < 4.0.0
 #'   \item The design is passed as a \code{data.frame}, not a \code{\link[data.table]{data.table}} or \code{\link[tibble]{tibble}}.
 #'   \item The option \dQuote{stringsAsFactors} is not set or set to \code{TRUE}.
 #' }
@@ -24,8 +25,9 @@
 #'   Named list of data frames (or \code{\link[data.table]{data.table}}).
 #'   The name must match the algorithm name while the column names correspond to parameters of the algorithm.
 #'   If \code{NULL}, experiments for all defined algorithms without any parameters are added.
-#' @param repls [\code{integer(1)}]\cr
-#'   Number of replications for each experiment.
+#' @param repls [\code{integer()}]\cr
+#'   Number of replications for each problem design in `prob.designs` (automatically replicated to
+#'   the correct length).
 #' @param combine [\code{character(1)}]\cr
 #'   How to combine the rows of a single problem design with the rows of a single algorithm design?
 #'   Default is \dQuote{crossprod} which combines each row of the problem design which each row of the algorithm design
@@ -56,6 +58,7 @@
 #' addAlgorithm("deviation", fun = fun, reg = tmp)
 #'
 #' # define problem and algorithm designs
+#' library(data.table)
 #' prob.designs = algo.designs = list()
 #' prob.designs$rnorm = CJ(n = 100, mean = -1:1, sd = 1:5)
 #' prob.designs$rexp = data.table(n = 100, lambda = 1:5)
@@ -70,7 +73,7 @@
 #' unwrap(getJobPars(reg = tmp))
 addExperiments = function(prob.designs = NULL, algo.designs = NULL, repls = 1L, combine = "crossprod", reg = getDefaultRegistry()) {
   convertDesigns = function(type, designs, keywords) {
-    check.factors = default.stringsAsFactors()
+    check.factors = getRversion() < "4.0.0" && default.stringsAsFactors()
 
     Map(function(id, design) {
       if (check.factors && identical(class(design)[1L], "data.frame")) {
@@ -109,7 +112,8 @@ addExperiments = function(prob.designs = NULL, algo.designs = NULL, repls = 1L, 
     assertSubset(names(algo.designs), reg$algorithms)
     algo.designs = convertDesigns("Algorithm", algo.designs, c("job", "data", "instance"))
   }
-  repls = asCount(repls)
+  repls = asInteger(repls, lower = 1L, any.missing = FALSE)
+  repls = rep_len(repls, length(prob.designs))
   assertChoice(combine, c("crossprod", "bind"))
 
   all.ids = integer(0L)
@@ -118,6 +122,7 @@ addExperiments = function(prob.designs = NULL, algo.designs = NULL, repls = 1L, 
     pn = names(prob.designs)[i]
     pd = prob.designs[[i]]
     n.pd = max(nrow(pd), 1L)
+    repls_cur = repls[i]
 
     for (j in seq_along(algo.designs)) {
       an = names(algo.designs)[j]
@@ -125,13 +130,14 @@ addExperiments = function(prob.designs = NULL, algo.designs = NULL, repls = 1L, 
       n.ad = max(nrow(ad), 1L)
 
       if (combine == "crossprod") {
-        n.jobs = n.pd * n.ad * repls
-        info("Adding %i experiments ('%s'[%i] x '%s'[%i] x repls[%i]) ...", n.jobs, pn, n.pd, an, n.ad, repls)
+        n.jobs = n.pd * n.ad * repls_cur
+        info("Adding %i experiments ('%s'[%i] x '%s'[%i] x repls[%i]) ...", n.jobs, pn, n.pd, an, n.ad, repls_cur)
         idx = CJ(.i = seq_len(n.pd), .j = seq_len(n.ad))
       } else {
-        n.jobs = max(n.pd, n.ad) * repls
-        info("Adding %i experiments (('%s'[%i] | '%s'[%i]) x repls[%i]) ...", n.jobs, pn, n.pd, an, n.ad, repls)
-        idx = data.table(.i = rep_len(seq_len(n.pd), n.jobs), .j = rep_len(seq_len(n.ad), n.jobs))
+        recycle = max(n.pd, n.ad)
+        n.jobs = recycle * repls_cur
+        info("Adding %i experiments (('%s'[%i] | '%s'[%i]) x repls[%i]) ...", n.jobs, pn, n.pd, an, n.ad, repls_cur)
+        idx = data.table(.i = rep_len(seq_len(n.pd), recycle), .j = rep_len(seq_len(n.ad), recycle))
       }
 
       # create temp tab with prob name, algo name and pars as list
@@ -161,7 +167,7 @@ addExperiments = function(prob.designs = NULL, algo.designs = NULL, repls = 1L, 
       }
 
       # create rows in status table for new defs and each repl and filter for defined
-      tab = CJ(def.id = tab$def.id, repl = seq_len(repls))[!reg$status, on = c("def.id", "repl")]
+      tab = CJ(def.id = tab$def.id, repl = seq_len(repls_cur))[!reg$status, on = c("def.id", "repl")]
       if (nrow(tab) < n.jobs)
         info("Skipping %i duplicated experiments ...", n.jobs - nrow(tab))
 
@@ -175,9 +181,11 @@ addExperiments = function(prob.designs = NULL, algo.designs = NULL, repls = 1L, 
     }
   }
 
-  setkeyv(reg$defs, "def.id")
-  setkeyv(reg$status, "job.id")
-  saveRegistry(reg)
+  if (length(all.ids)) {
+    setkeyv(reg$defs, "def.id")
+    setkeyv(reg$status, "job.id")
+    saveRegistry(reg)
+  }
   invisible(data.table(job.id = all.ids, key = "job.id"))
 }
 

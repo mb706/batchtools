@@ -4,8 +4,13 @@
 \alias{makeClusterFunctionsDocker}
 \title{ClusterFunctions for Docker}
 \usage{
-makeClusterFunctionsDocker(image, docker.args = character(0L),
-  image.args = character(0L), scheduler.latency = 1, fs.latency = 65)
+makeClusterFunctionsDocker(
+  image,
+  docker.args = character(0L),
+  image.args = character(0L),
+  scheduler.latency = 1,
+  fs.latency = 65
+)
 }
 \arguments{
 \item{image}{[\code{character(1)}]\cr
@@ -31,7 +36,7 @@ Usually safe to set to \code{0} to disable the heuristic, e.g. if you are workin
 [\code{\link{ClusterFunctions}}].
 }
 \description{
-Cluster functions for Docker/Docker Swarm (\url{https://docs.docker.com/swarm/}).
+Cluster functions for Docker/Docker Swarm (\url{https://docs.docker.com/engine/swarm/}).
 
 The \code{submitJob} function executes
 \code{docker [docker.args] run --detach=true [image.args] [resources] [image] [cmd]}.
@@ -54,15 +59,16 @@ Use \code{docker ps -a --filter 'label=batchtools' --filter 'status=exited'} to 
 containers manually (or usa a cron job).
 }
 \seealso{
-Other ClusterFunctions: \code{\link{makeClusterFunctionsInteractive}},
-  \code{\link{makeClusterFunctionsLSF}},
-  \code{\link{makeClusterFunctionsMulticore}},
-  \code{\link{makeClusterFunctionsOpenLava}},
-  \code{\link{makeClusterFunctionsSGE}},
-  \code{\link{makeClusterFunctionsSSH}},
-  \code{\link{makeClusterFunctionsSlurm}},
-  \code{\link{makeClusterFunctionsSocket}},
-  \code{\link{makeClusterFunctionsTORQUE}},
-  \code{\link{makeClusterFunctions}}
+Other ClusterFunctions: 
+\code{\link{makeClusterFunctionsInteractive}()},
+\code{\link{makeClusterFunctionsLSF}()},
+\code{\link{makeClusterFunctionsMulticore}()},
+\code{\link{makeClusterFunctionsOpenLava}()},
+\code{\link{makeClusterFunctionsSGE}()},
+\code{\link{makeClusterFunctionsSSH}()},
+\code{\link{makeClusterFunctionsSlurm}()},
+\code{\link{makeClusterFunctionsSocket}()},
+\code{\link{makeClusterFunctionsTORQUE}()},
+\code{\link{makeClusterFunctions}()}
 }
 \concept{ClusterFunctions}

@@ -1,5 +1,3 @@
-context("addProblem")
-
 test_that("addProblem / removeProblem", {
   reg = makeTestExperimentRegistry()
   prob = addProblem(reg = reg, "p1", data = iris, fun = function(job, data, ...) nrow(data))
@@ -8,7 +6,7 @@ test_that("addProblem / removeProblem", {
   expect_equal(prob$name, "p1")
   expect_function(prob$fun)
   expect_null(prob$seed)
-  expect_file(getProblemURI(reg, prob$name))
+  expect_file_exists(getProblemURI(reg, prob$name))
   expect_false(prob$cache)
   expect_false(fs::dir_exists(getProblemCacheDir(reg, "p1")))
 
@@ -18,7 +16,7 @@ test_that("addProblem / removeProblem", {
   expect_equal(prob$name, "p2")
   expect_function(prob$fun)
   expect_identical(prob$seed, 42L)
-  expect_file(getProblemURI(reg, prob$name))
+  expect_file_exists(getProblemURI(reg, prob$name))
   expect_true(prob$cache)
   expect_directory_exists(getProblemCacheDir(reg, "p2"))
 
