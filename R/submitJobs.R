@@ -272,7 +272,8 @@ submitJobs = function(ids = NULL, resources = list(), sleep = NULL, reg = getDef
   pb = makeProgressBar(total = length(chunks), format = ":status [:bar] :percent eta: :eta")
   pb$tick(0, tokens = list(status = "Submitting"))
 
-  intermediate = mclapply(chunks, function(ch) {
+  info("Preparing chunks ...")
+  intermediate = parallel::mclapply(chunks, function(ch) {
     ids.chunk = ids[chunk == ch, c("job.id", "resource.id")]
     jc = makeJobCollection(ids.chunk, resources = reg$resources[ids.chunk, on = "resource.id"]$resources[[1L]], reg = reg)
     if (reg$cluster.functions$store.job.collection)
@@ -280,6 +281,7 @@ submitJobs = function(ids = NULL, resources = list(), sleep = NULL, reg = getDef
     list(ids.chunk, jc)
   }, mc.cores = mc.cores)
 
+  info("Submitting chunks ...")
   for (im in intermediate) {
     ids.chunk = im[[1L]]
     jc = im[[2L]]
