@@ -192,7 +192,7 @@
 #' # There should also be a note in the log:
 #' grepLogs(pattern = "parallelMap", reg = tmp)
 #' }
-submitJobs = function(ids = NULL, resources = list(), sleep = NULL, reg = getDefaultRegistry()) {
+submitJobs = function(ids = NULL, resources = list(), sleep = NULL, reg = getDefaultRegistry(), mc.cores = 1) {
   assertRegistry(reg, writeable = TRUE, sync = TRUE)
   assertList(resources, names = "strict")
   resources = insert(reg$default.resources, resources)
@@ -272,12 +272,17 @@ submitJobs = function(ids = NULL, resources = list(), sleep = NULL, reg = getDef
   pb = makeProgressBar(total = length(chunks), format = ":status [:bar] :percent eta: :eta")
   pb$tick(0, tokens = list(status = "Submitting"))
 
-  for (ch in chunks) {
+  intermediate = mclapply(chunks, function(ch) {
     ids.chunk = ids[chunk == ch, c("job.id", "resource.id")]
     jc = makeJobCollection(ids.chunk, resources = reg$resources[ids.chunk, on = "resource.id"]$resources[[1L]], reg = reg)
     if (reg$cluster.functions$store.job.collection)
       writeRDS(jc, file = jc$uri, compress = jc$compress)
+    list(ids.chunk, jc)
+  }, mc.cores = mc.cores)
 
+  for (im in intermediate) {
+    ids.chunk = im[[1L]]
+    jc = im[[2L]]
     # do we have to wait for jobs to get terminated before proceeding?
     if (!is.na(max.concurrent.jobs)) {
       # count chunks or job.id
